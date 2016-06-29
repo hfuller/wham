@@ -67,13 +67,31 @@
       DEFAULT_SOURCE_URL = '',
       outputs = [],
       inputs = [],
+      srcURL = '',
       outputsElem = document.getElementById('outputs'),
       inputsElem = document.getElementById('inputs')
   
   
-  var configure = function () {
-    outputs = DEFAULT_OUTPUTS
-    inputs = DEFAULT_INPUTS
+  var configure = function (opts) {
+    // maybe add the ability to seed with other
+    // input/output data?
+    if(opts !== undefined)
+      if(typeof opts.url !== 'undefined')
+        srcURL = opts.url
+    
+    if(srcURL !== '')
+      if(typeof srcURL !== 'string')
+        throw new TypeError('Source URL must be a string.')
+      else {
+        outputs = getOutputs()
+        inputs = getInputs()
+      }
+    else {   
+      outputs = [].slice.call(outputsElem.children).filter(filterIOElems)
+      inputs = [].slice.call(inputsElem.children).filter(filterIOElems)
+      outputs.forEach(function (e, i, a) { a[i] = convertElemToIO(e) })
+      inputs.forEach(function (e, i, a) { a[i] = convertElemToIO(e) })
+    }
     
     outputs.sort(compareIO)
     inputs.sort(compareIO)
@@ -90,6 +108,16 @@
       arr.splice(index, 1)
   }
   
+  
+  var getInputs = function () {
+    // make this fetch from server
+    return DEFAULT_INPUTS
+  }
+  var getOutputs = function () {
+    // make this fetch from server
+    return DEFAULT_OUTPUTS
+  }
+  
   // returns 3 arrays detailing event types to use
   // in handling all elements of newArr that are not
   // identical to an element in oldArr (compared 
@@ -103,7 +131,6 @@
         add = [],
         index = 0 // for keeping track of the current oldEle
     
-    
     for(var newEle in newArr) {
       var n = newArr[newEle]
       
@@ -113,13 +140,17 @@
         add.push(n)
         continue
       }
-        
+      
       // delete any old elements that
       // are not contained in the new
       // array
-      while (oldArr[index].id < n.id) 
-        del.push(oldArr.splice(index, 1))
-      
+      // ex. old: [2, 3, 4], new: [1, 2], index: 0
+      // 2 >= 1, skip, index++
+      // 3 >= 2, skip, index++
+      while (index < oldArr.length && oldArr[index].id < n.id)
+        del.push(oldArr[index++])
+      if (index >= oldArr.length)
+        continue
       // mark anything different as update
       var o = oldArr[index]
       if(o.name !== n.name
@@ -132,14 +163,109 @@
       index++
     }
     
-    return { 'delete': del, 'update': upd, 'add': add }
-  }
-  
-  var updateDOM = function () {
+    while(index < oldArr.length)
+      del.push(oldArr[index++])
       
+    return { 'del': del, 'upd': upd, 'add': add }
   }
   
-  console.log()
+  // array.filter callback for removing elems that
+  // are not inputs are outputs
+  var filterIOElems = function (e) {
+    return (typeof e.getAttribute('data-id') !== 'undefined')
+  }
   
+  // checks the return value of diff() to see
+  // if there's any difference
+  var hasActionsToTake = function (actions) {
+    return actions.del.length > 0 || actions.upd.length > 0 || actions.add.length > 0
+  }
   
-})
+  // construct an <io>
+  var convertIOToElem = function (io) {
+    var isInput = true,
+        e
+    
+    // if we don't have an associated input, we're an output
+    if(typeof io.input !== 'undefined')
+      isInput = false
+      
+    e = document.createElement('div')
+    e.classList.add(isInput ? 'input' : 'output')
+    e.textContent = io.name
+    return e
+  }
+  var convertElemToIO = function (e) {
+    var io = {}
+    io.id = e.getAttribute('data-id')
+    io.name = e.text
+    if(e.classList.contains('output')) {
+      io.volume = e.getAttribute('data-volume')
+      io.input = e.getAttribute('data-input')
+    }
+    return io
+  }
+  
+  var updateElems = function (elems, actions) {
+    // if there's an add action, 
+    //   find the parent node of one of the existing
+    //   elements (doesn't matter which), and append
+    //   a new <io> to it
+    for(var a in actions.add)
+      elems[0].parentNode.appendChild(convertIOToElem(actions.add[a]))
+      
+    // if there's an update action,
+    //   find the element that shares a data-id value
+    //   with the action's id value, 
+    //   then make all applicable values the same.
+    for(var u in actions.upd) {
+      for(var e in elems) {
+        if(elems[e].getAttribute('data-id') == actions.upd[u].id) {
+          elems[e].setAttribute('data-id', actions.upd[u].id)
+          elems[e].textContent = actions.upd[u].name
+          if(elems[e].classList.contains('output')) {
+            elems[e].setAttribute('data-volume', actions.upd[u].volume)
+            elems[e].setAttribute('data-input', actions.upd[u].input)
+          }
+        }
+      }
+    }
+    
+    // if there's a delete action,
+    // find the element that shares a data-id value
+    // with the action's id value,
+    // then have it ask its parent to commit infanticide
+    // "KILL ME"
+    for(var d in actions.del) 
+      for(var e in elems)
+        if(elems[e].getAttribute('data-id') === actions.del[d].id)
+          elems[e].parentNode.removeChild(elems[e])
+  } 
+  var updateDOM = function (inputActions, outputActions) {
+    // fetch all children of outputs & inputs, 
+    // ensure all of them are actually io elems
+    var outputElems = [].slice.call(outputsElem.children).filter(filterIOElems),
+        inputElems = [].slice.call(inputsElem.children).filter(filterIOElems)
+    
+    if(hasActionsToTake(inputActions))
+      updateElems(inputElems, inputActions)
+    if(hasActionsToTake(outputActions))
+      updateElems(outputElems, outputActions)
+  }
+  
+  // main cycle.
+  // this could cause loading issues if the data src
+  // isn't responding quickly (promises would be better)
+  var main = function () {
+    var newInputs  = getInputs().sort(compareIO)
+    var newOutputs = getOutputs().sort(compareIO)
+    updateDOM(diff(inputs, newInputs), diff(outputs, newOutputs))
+    inputs = newInputs
+    outputs = newOutputs
+    // setInterval(main.bind(this), 1000)
+  }
+  
+  // setup
+  configure()
+  main() 
+})()
