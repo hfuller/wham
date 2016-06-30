@@ -327,7 +327,7 @@ var outputsElem,
             mousedownTarget.setAttribute('data-input', null)
             var i = mousedownTarget.getAttribute('data-input')
             for(var o in outputs) 
-              if(i === outputs[o].input)
+              if(outputs[o].input !== null && i === outputs[o].input)
                 outputs[o].input = null
           }
         }
