@@ -1,3 +1,10 @@
+var outputsElem,
+    inputsElem,
+    outputElems,
+    inputElems,
+    outputs,
+    inputs
+
 (function () {
   
   var DEFAULT_OUTPUTS = [
@@ -63,13 +70,15 @@
           'id': 6,
           'name': 'gleipnir'
         }
-      ]
+      ],
       DEFAULT_SOURCE_URL = '',
       outputs = [],
       inputs = [],
-      srcURL = '',
-      outputsElem = document.getElementById('outputs'),
-      inputsElem = document.getElementById('inputs')
+      srcURL = ''
+      
+      
+  outputsElem = document.getElementById('outputs')
+  inputsElem = document.getElementById('inputs')
   
   
   var configure = function (opts) {
@@ -107,7 +116,6 @@
     if(index !== -1)
       arr.splice(index, 1)
   }
-  
   
   var getInputs = function () {
     // make this fetch from server
@@ -192,9 +200,13 @@
       
     e = document.createElement('div')
     e.classList.add(isInput ? 'input' : 'output')
+    e.setAttribute('data-id', io.id)
     e.textContent = io.name
+    if(!isInput) e.setAttribute('data-input', io.input)
+    if(!isInput) e.setAttribute('data-volume', io.volume)
     return e
   }
+  // construct an {io}
   var convertElemToIO = function (e) {
     var io = {}
     io.id = e.getAttribute('data-id')
@@ -268,9 +280,11 @@
   // setup
   configure()
   main() 
-})()
+})();
 
-
+/*******************************
+ **    INPUT CONFIGURATION    **
+ *******************************/
 (function () {
   // if a mouseup event comes in,
   //   then if there was just a mousedown event on the same element,
@@ -279,25 +293,75 @@
   //         then if that output is connected,
   //           then disconnect that output.
   //         otherwise, do nothing.
-  //       then if an output's volume button was clicked,
+  //       else if an output's volume button was clicked,
   //         then provide a volume slider UI.
-  //       then if an output's cancel button was clicked,
+  //       else if an output's cancel button was clicked,
   //         then disconnect that output.
-  //       then if an input was clicked,
+  //       else if an input was clicked,
   //         then count that input as clicked.
   //       otherwise, do nothing.
-  //     then if an input is clicked,
+  //     else if an input is clicked,
   //       then if the same input was clicked,
   //         then count that input as unclicked.
-  //       then if an input was clicked,
-  //         then count that input as clicked instead.
-  //       then if an output was clicked,
+  //       else if an input was clicked,
+  //         then count the more recently-clicked input as clicked instead.
+  //       else if an output was clicked,
   //         then connect that input to that output and count that input as unclicked.
   //       otherwise, count the clicked input as unclicked.
   //     otherwise, do nothing.
-  //   then if there was a mousedown event on an input,
+  //   else if there was a mousedown event on an input,
   //     then if this mouseup event was on an output,
   //       then connect that input to that output and count everything as unclicked.
   //     otherwise, do nothing.
   //   otherwise, count everything as unclicked.
+  
+  var clickedNode = null,
+      mousedownTarget = null
+      
+  var onMouseup = function (e) {
+    e.preventDefault()
+    if(mousedownTarget !== null && mousedownTarget === e.target) {
+      if(clickedNode === null) {
+        if(mousedownTarget.classList.contains('output')) {
+          if(mousedownTarget.getAttribute('data-input') != null) {
+            mousedownTarget.setAttribute('data-input', null)
+            var i = mousedownTarget.getAttribute('data-input')
+            for(var o in outputs) 
+              if(i === outputs[o].input)
+                outputs[o].input = null
+          }
+        }
+        // else if (mousedownTarget.classList.contains('volume')) ...
+        // else if (mousedownTarget.classList.contains('cancel')) ...
+        else if(mousedownTarget.classList.contains('input'))
+          clickedNode = mousedownTarget
+      }
+      else if(clickedNode.classList.contains('input')) {
+        if(mousedownTarget === clickedNode)
+          clickedNode = null
+        else if(mousedownTarget.classList.contains('input'))
+          clickedNode = mousedownTarget
+        else if(mousedownTarget.classList.contains('output')) {
+          mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
+          clickedNode = null
+        }
+      }
+    }
+    else if(mousedownTarget !== null && mousedownTarget.classList.contains('input')) {
+      if(e.target.classList.contains('output')) {
+        mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
+        clickedNode = null
+      }
+    }
+    else clickedNode = null
+  }
+  
+  var onMousedown = function (e) {
+    e.preventDefault()
+    mousedownTarget = e.target
+  }
+  
+  document.addEventListener('mousedown', onMousedown.bind(this))
+  document.addEventListener('mouseup', onMouseup.bind(this))
+  
 })()
