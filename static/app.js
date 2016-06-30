@@ -269,3 +269,35 @@
   configure()
   main() 
 })()
+
+
+(function () {
+  // if a mouseup event comes in,
+  //   then if there was just a mousedown event on the same element,
+  //     then if nothing is clicked,
+  //       then if an output was clicked,
+  //         then if that output is connected,
+  //           then disconnect that output.
+  //         otherwise, do nothing.
+  //       then if an output's volume button was clicked,
+  //         then provide a volume slider UI.
+  //       then if an output's cancel button was clicked,
+  //         then disconnect that output.
+  //       then if an input was clicked,
+  //         then count that input as clicked.
+  //       otherwise, do nothing.
+  //     then if an input is clicked,
+  //       then if the same input was clicked,
+  //         then count that input as unclicked.
+  //       then if an input was clicked,
+  //         then count that input as clicked instead.
+  //       then if an output was clicked,
+  //         then connect that input to that output and count that input as unclicked.
+  //       otherwise, count the clicked input as unclicked.
+  //     otherwise, do nothing.
+  //   then if there was a mousedown event on an input,
+  //     then if this mouseup event was on an output,
+  //       then connect that input to that output and count everything as unclicked.
+  //     otherwise, do nothing.
+  //   otherwise, count everything as unclicked.
+})()
