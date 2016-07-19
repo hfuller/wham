@@ -3,7 +3,7 @@ html, body {
   width: 100%;
 }
 
-.inputs, .outputs {
+.inputs, .outputs, .connections {
   display: flex;
   flex-wrap: wrap;
   
@@ -59,4 +59,27 @@ html, body {
   border-top: none;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
+}
+
+.connection {
+  width: 10px;
+  height: 60vh;
+  position: relative;
+  top: 150px;
+  left: 48px;
+  
+  background-color: #777;
+}
+.connection::after {
+  content: ' ';
+  
+  position: absolute;
+  top: -8px;
+  left: -15px;
+  
+  border: 20px solid #777;
+  border-top: none;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  
 }
