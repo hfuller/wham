@@ -21,6 +21,7 @@ def get_input(id):
 		if x['id'] == int(id):
 			return json.dumps(x)
 
+#TODO: remove duplication here.
 @app.route('/outputs/')
 def get_outputs():
 	return json.dumps(outputs)
@@ -36,11 +37,16 @@ if __name__ == '__main__':
 
 	with open('inputs.json') as f: inputs = json.loads(f.read())
 	with open('outputs.json') as f: outputs = json.loads(f.read())
+
+	#convert them to dicts
+	inputs = dict(zip([x['id'] for x in inputs], inputs))
+	outputs = dict(zip([x['id'] for x in outputs], outputs))
 	
 	#prep outputs reasonably
-	for output in outputs:
-		output['volume'] = 50
-		output['input'] = None
+	print outputs
+	for id in outputs:
+		outputs[id]['volume'] = 50
+		outputs[id]['input'] = None
 
         if app.debug:
                 print "INPUTS: " + json.dumps(inputs)
