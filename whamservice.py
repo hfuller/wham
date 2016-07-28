@@ -35,7 +35,7 @@ def put_output(id):
 	except KeyError:
 		print "not updating volume"
 	try:
-		outputs[id]['input'] = int(request.form['input'])
+		outputs[id]['input'] = json.loads(request.form['input']) #handle ints or 'null'
 	except KeyError:
 		print "not updating input" 
 
