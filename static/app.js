@@ -400,6 +400,7 @@ var putInputs = function (inputs, callback) {
         rq = new XMLHttpRequest()
     rq.addEventListener('load', callback)
     rq.open('PUT', '/inputs/' + input.id)
+    rq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     rq.send()
   }
 }
@@ -411,6 +412,8 @@ var putOutputs = function (outputs, callback) {
         rq = new XMLHttpRequest()
     rq.addEventListener('load', callback)
     rq.open('PUT', '/outputs/' + output.id)
+    rq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+    console.log(o)
     rq.send('input=' + output.input + '&volume=' + output.volume)
   }
 }
@@ -478,7 +481,8 @@ var main = function () {
   //   otherwise, count everything as unclicked.
   
   var clickedNode = null,
-      mousedownTarget = null
+      mousedownTarget = null,
+      updatedOutputs = []
       
   var onMouseup = function (e) {
     e.preventDefault()
@@ -489,8 +493,11 @@ var main = function () {
             mousedownTarget.setAttribute('data-input', null)
             var i = mousedownTarget.getAttribute('data-input')
             for(var o in outputs) 
-              if(outputs[o].input !== null && i === outputs[o].input)
-                outputs[o].input = null
+              if(outputs[o].input !== null && i === outputs[o].input) {
+                var targetOutput = outputs[o]
+                targetOutput.input = null
+                updatedOutputs.push(targetOutput)
+              }
           }
         }
         // else if (mousedownTarget.classList.contains('volume')) ...
@@ -505,6 +512,8 @@ var main = function () {
           clickedNode = mousedownTarget
         else if(mousedownTarget.classList.contains('output')) {
           mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
+          var targetOutput = convertElemToIO(mousedownTarget)
+          updatedOutputs.push(targetOutput)
           clickedNode = null
         }
       }
@@ -512,13 +521,17 @@ var main = function () {
     else if(mousedownTarget !== null && mousedownTarget.classList.contains('input')) {
       if(e.target.classList.contains('output')) {
         mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
+        var targetOutput = convertElemToIO(mousedownTarget)
+        for(var o in outputs)
+          if(outputs[o].id === targetOutput.id)
+            updatedOutputs.push(targetOutput)
+        
         clickedNode = null
       }
     }
     else clickedNode = null
     
-    putInputs(inputs, updateInputs)
-    putOutputs(outputs, updateOutputs)
+    putOutputs(updatedOutputs, updateOutputs)
   }
   
   var onMousedown = function (e) {
