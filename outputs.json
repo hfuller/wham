@@ -1,6 +1,18 @@
 [
 	{
 		"id": 1,
-		"name": "Output One"
-	}
+		"name": "Office"
+	},
+    {
+        "id": 2,
+        "name": "Kitchen"
+    },
+    {
+        "id": 3,
+        "name": "Loft"
+    },
+    {
+        "id": 4,
+        "name": "Main Shop"
+    }
 ]	

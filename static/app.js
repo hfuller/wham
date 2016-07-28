@@ -66,6 +66,18 @@ var outputContainerElements = document.querySelectorAll('.outputs'),
       {
         'id': 6,
         'name': 'gleipnir'
+      },
+      {
+        'id': 10,
+        'name': 'spare'
+      },
+      {
+        'id': 11,
+        'name': 'spare 2 electrical spectactrical'
+      },
+      {
+        'id': 12,
+        'name': 'spare 3 electric boogadee'
       }
     ],
     DEFAULT_SOURCE_URL = '',
@@ -109,13 +121,19 @@ var removeIO = function (io, arr) {
     arr.splice(index, 1)
 }
 
-var getInputs = function () {
+var getInputs = function (callback) {
   // make this fetch from server
-  return DEFAULT_INPUTS
+  var rq = new XMLHttpRequest()
+  rq.addEventListener('load', callback)
+  rq.open('GET', '/inputs/')
+  rq.send()
 }
-var getOutputs = function () {
+var getOutputs = function (callback) {
   // make this fetch from server
-  return DEFAULT_OUTPUTS
+  var rq = new XMLHttpRequest()
+  rq.addEventListener('load', callback)
+  rq.open('GET', '/outputs/')
+  rq.send()
 }
 
 // returns 3 arrays detailing event types to use
@@ -213,8 +231,6 @@ var convertElemToIO = function (e) {
 
 var updateElems = function (elems, actions) {
   
-  console.log()
-  
   // if there's an add action, 
   //   append a new <io> to the unconnected channel
   for(var a in actions.add) {
@@ -224,8 +240,8 @@ var updateElems = function (elems, actions) {
       ioElem = unconnectedChannel.querySelector('.outputs').appendChild(ioElem)
     else
       ioElem = unconnectedChannel.querySelector('.inputs').appendChild(ioElem)
-
-    if(io.hasOwnProperty('input') && io.input !== '') {
+      
+    if(io.hasOwnProperty('input') && io.input !== null) {
       var o = ioElem,
           i = document.querySelector('.input[data-id="' + io.input + '"]')
       destroyConnection(o)
@@ -250,15 +266,15 @@ var updateElems = function (elems, actions) {
           if(o.getAttribute('data-input') !== inputString) {
             var i = document.querySelector('.input[data-id="' + o.getAttribute('data-input') + '"]')
             // destroying a connection
-            if(inputString === '' && (o.getAttribute('data-input') !== undefined && o.getAttribute('data-input') !== '')) {
+            if(inputString === '' && (o.getAttribute('data-input') !== undefined && o.getAttribute('data-input') !== null)) {
               destroyConnection(o)
             }
             // creating a connection
-            else if(inputString !== '' && (o.getAttribute('data-input') === '')) {
+            else if(inputString !== '' && (o.getAttribute('data-input') === null)) {
               createConnection(o, i)
             }
             // destroying and then creating a connection
-            else if (inputString !== '' && (o.getAttribute('data-input') !== '')) {
+            else if (inputString !== '' && (o.getAttribute('data-input') !== null)) {
               destroyConnection(o)
               createConnection(o, i)
             }
@@ -298,6 +314,8 @@ var updateElems = function (elems, actions) {
 
 var destroyConnection = function (output) {
 
+  console.log(output)
+  
   var channel = output.parentElement.parentElement
   // if there's only one output connected, we assume 
   // that it's this output, so let's move it,
@@ -319,6 +337,7 @@ var destroyConnection = function (output) {
 }
 var createConnection = function (output, input) {
 
+  console.log(output)
   console.log(input)
 
   var outputs
@@ -361,34 +380,68 @@ var extractIOElementsFromContainerElements = function (containerElements) {
   return ioElements
 }
 
-var updateDOM = function (inputActions, outputActions) {
+var updateDOM = function (actions, type) {
   // fetch all children of outputs & inputs, 
   // ensure all of them are actually io elems
-  var outputElems = extractIOElementsFromContainerElements(outputContainerElements).filter(filterIOElems),
-      inputElems = extractIOElementsFromContainerElements(inputContainerElements).filter(filterIOElems)
+  var elems = extractIOElementsFromContainerElements(
+    (type === 'inputs')? inputContainerElements : outputContainerElements
+  ).filter(filterIOElems)
 
-  if(hasActionsToTake(inputActions))
-    updateElems(inputElems, inputActions)
-  if(hasActionsToTake(outputActions))
-    updateElems(outputElems, outputActions)
+  if(hasActionsToTake(actions))
+    updateElems(elems, actions)
+}
+
+var putInputs = function (inputs, callback) {
+  // this should basically never happen...
+  if(inputs.length <= 0) return
+  
+  for(var i in inputs) {
+    var input = inputs[i],
+        rq = new XMLHttpRequest()
+    rq.addEventListener('load', callback)
+    rq.open('PUT', '/inputs/' + input.id)
+    rq.send()
+  }
+}
+var putOutputs = function (outputs, callback) {
+  if(outputs.length <= 0) return
+  
+  for(var o in outputs) {
+    var output = outputs[o],
+        rq = new XMLHttpRequest()
+    rq.addEventListener('load', callback)
+    rq.open('PUT', '/outputs/' + output.id)
+    rq.send('input=' + output.input + '&volume=' + output.volume)
+  }
 }
 
 // main cycle.
 // this could cause loading issues if the data src
 // isn't responding quickly (promises would be better)
+var updateInputs = function () {
+  getInputs(function (res) {
+    var newInputs = JSON.parse(res.target.response).sort(compareIO)
+    updateDOM(diff(inputs, newInputs), 'inputs')
+    inputs = newInputs
+  }.bind(this))
+}
+var updateOutputs = function () {
+  getOutputs(function (res) {
+    var newOutputs = JSON.parse(res.target.response).sort(compareIO)
+    updateDOM(diff(outputs, newOutputs), 'outputs')
+    outputs = newOutputs
+  }.bind(this))
+}
 var main = function () {
-  var newInputs  = getInputs().sort(compareIO)
-  var newOutputs = getOutputs().sort(compareIO)
-  updateDOM(diff(inputs, newInputs), diff(outputs, newOutputs))
-  inputs = newInputs
-  outputs = newOutputs
+  updateInputs()
+  updateOutputs()
 };
 
 (function () {
   // setup
   configure()
   main()
-  setInterval(main.bind(this), 1000)
+  // setInterval(main.bind(this), 3000)
 })();
 
 /*******************************
@@ -464,7 +517,8 @@ var main = function () {
     }
     else clickedNode = null
     
-    main()
+    putInputs(inputs, updateInputs)
+    putOutputs(outputs, updateOutputs)
   }
   
   var onMousedown = function (e) {

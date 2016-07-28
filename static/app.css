@@ -18,9 +18,9 @@ html, body {
   display: flex;
   position: relative;
   flex: 0 1 auto;
-  flex-direction: column-reverse;
+  flex-direction: column;
   justify-content: space-between;
-  padding: 3rem;
+  padding: 1rem;
   height: 100vh;
   box-sizing: border-box;
 }
@@ -43,6 +43,7 @@ html, body {
 .inputs, .outputs {
   height: auto;
   justify-content: center;
+  min-height: 30px;
 }
 
 .input, .output {
