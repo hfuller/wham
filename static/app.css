@@ -3,20 +3,48 @@ html, body {
   width: 100%;
 }
 
-.inputs, .outputs, .connections {
+.inputs, .outputs, .channels {
   display: flex;
   flex-wrap: wrap;
+  flex-direction: row;
   
   width: 100%;
 }
-.inputs {
-  position: absolute;
-  bottom: 0;
+.channels {
+  flex-wrap: nowrap;
+  height: 100%;
 }
-.outputs {
-  position: absolute;
-  top: 0;
+.channel {
+  display: flex;
+  position: relative;
+  flex: 0 1 auto;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  padding: 3rem;
+  height: 100vh;
+  box-sizing: border-box;
 }
+.channel:nth-of-type(4n) {
+  background-color: #67a5ef;
+}
+.channel:nth-of-type(4n + 1) {
+  background-color: #ef67a5;
+}
+.channel:nth-of-type(4n + 2) {
+  background-color: #a5ef67;
+}
+.channel:nth-of-type(4n + 3) {
+  background-color: #efa567;
+}
+.channel.unconnected {
+  background-color: #aaa;
+}
+
+.inputs, .outputs {
+  height: auto;
+  justify-content: center;
+}
+
 .input, .output {
   position: relative;
   flex: 0 1 auto;
@@ -34,24 +62,14 @@ html, body {
   box-shadow: 3px 3px 0 #233488;
   margin-top: -8px;
 }
-.input::after, .output::after {
+.input::after {
   content: ' ';
-  
-  position: absolute;
-  bottom: -3px;
-  left: 34px;
   
   width: 0;
   height: 0;
   
   z-index: 2;
   
-  border: 10px solid #fff;
-  border-top: none;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-}
-.input::after {
   position: absolute;
   top: -10px;
   left: 34px;
