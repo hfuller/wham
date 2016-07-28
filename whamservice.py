@@ -15,10 +15,20 @@ def homepage():
 @app.route('/inputs/')
 def get_inputs():
 	return json.dumps(inputs)
+@app.route('/inputs/<id>')
+def get_input(id):
+	for x in inputs:
+		if x['id'] == int(id):
+			return json.dumps(x)
 
 @app.route('/outputs/')
 def get_outputs():
 	return json.dumps(outputs)
+@app.route('/outputs/<id>')
+def get_output():
+	for x in outputs:
+		if x['id'] == int(id):
+			return json.dumps(x)
 
 
 if __name__ == '__main__':
