@@ -240,7 +240,7 @@ var updateElems = function (elems, actions) {
       ioElem = unconnectedChannel.querySelector('.outputs').appendChild(ioElem)
     else
       ioElem = unconnectedChannel.querySelector('.inputs').appendChild(ioElem)
-
+      
     if(io.hasOwnProperty('input') && io.input !== null) {
       var o = ioElem,
           i = document.querySelector('.input[data-id="' + io.input + '"]')
@@ -266,15 +266,15 @@ var updateElems = function (elems, actions) {
           if(o.getAttribute('data-input') !== inputString) {
             var i = document.querySelector('.input[data-id="' + o.getAttribute('data-input') + '"]')
             // destroying a connection
-            if(inputString === '' && (o.getAttribute('data-input') !== undefined && o.getAttribute('data-input') !== '')) {
+            if(inputString === '' && (o.getAttribute('data-input') !== undefined && o.getAttribute('data-input') !== null)) {
               destroyConnection(o)
             }
             // creating a connection
-            else if(inputString !== '' && (o.getAttribute('data-input') === '')) {
+            else if(inputString !== '' && (o.getAttribute('data-input') === null)) {
               createConnection(o, i)
             }
             // destroying and then creating a connection
-            else if (inputString !== '' && (o.getAttribute('data-input') !== '')) {
+            else if (inputString !== '' && (o.getAttribute('data-input') !== null)) {
               destroyConnection(o)
               createConnection(o, i)
             }
@@ -314,6 +314,8 @@ var updateElems = function (elems, actions) {
 
 var destroyConnection = function (output) {
 
+  console.log(output)
+  
   var channel = output.parentElement.parentElement
   // if there's only one output connected, we assume 
   // that it's this output, so let's move it,
@@ -335,6 +337,7 @@ var destroyConnection = function (output) {
 }
 var createConnection = function (output, input) {
 
+  console.log(output)
   console.log(input)
 
   var outputs
@@ -388,11 +391,28 @@ var updateDOM = function (actions, type) {
     updateElems(elems, actions)
 }
 
-var put = function (os, is) {
-  // if nothing's different, do nothing
-  if(os.length <= 0 && is.length <= 0) return
-    
-  // fill this in
+var putInputs = function (inputs, callback) {
+  // this should basically never happen...
+  if(inputs.length <= 0) return
+  
+  for(var i in inputs) {
+    var input = inputs[i],
+        rq = new XMLHttpRequest()
+    rq.addEventListener('load', callback)
+    rq.open('PUT', '/inputs/' + input.id)
+    rq.send()
+  }
+}
+var putOutputs = function (outputs, callback) {
+  if(outputs.length <= 0) return
+  
+  for(var o in outputs) {
+    var output = outputs[o],
+        rq = new XMLHttpRequest()
+    rq.addEventListener('load', callback)
+    rq.open('PUT', '/outputs/' + output.id)
+    rq.send('input=' + output.input + '&volume=' + output.volume)
+  }
 }
 
 // main cycle.
@@ -408,7 +428,6 @@ var updateInputs = function () {
 var updateOutputs = function () {
   getOutputs(function (res) {
     var newOutputs = JSON.parse(res.target.response).sort(compareIO)
-    console.log(newOutputs)
     updateDOM(diff(outputs, newOutputs), 'outputs')
     outputs = newOutputs
   }.bind(this))
@@ -498,7 +517,8 @@ var main = function () {
     }
     else clickedNode = null
     
-    put(outputs, inputs)
+    putInputs(inputs, updateInputs)
+    putOutputs(outputs, updateOutputs)
   }
   
   var onMousedown = function (e) {
