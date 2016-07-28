@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, redirect
+from flask import Flask, redirect, request
 import json
 
 app = Flask(__name__)
@@ -14,23 +14,33 @@ def homepage():
 
 @app.route('/inputs/')
 def get_inputs():
-	return json.dumps(inputs)
-@app.route('/inputs/<id>')
+	return json.dumps(inputs.values())
+@app.route('/inputs/<int:id>', methods=['GET'])
 def get_input(id):
-	for x in inputs:
-		if x['id'] == int(id):
-			return json.dumps(x)
+	return json.dumps(inputs[int(id)])
 
 #TODO: remove duplication here.
 @app.route('/outputs/')
 def get_outputs():
-	return json.dumps(outputs)
-@app.route('/outputs/<id>')
-def get_output():
-	for x in outputs:
-		if x['id'] == int(id):
-			return json.dumps(x)
+	return json.dumps(outputs.values())
+@app.route('/outputs/<int:id>', methods=['GET'])
+def get_output(id):
+	return json.dumps(outputs[int(id)])
+@app.route('/outputs/<int:id>', methods=['PUT'])
+def put_output(id):
+	print request.form
 
+	try:
+		outputs[id]['volume'] = int(request.form['volume'])
+	except KeyError:
+		print "not updating volume"
+	try:
+		outputs[id]['input'] = int(request.form['input'])
+	except KeyError:
+		print "not updating input" 
+
+	print outputs[id]
+	return ('',200)
 
 if __name__ == '__main__':
 	app.debug = True
