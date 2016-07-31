@@ -173,7 +173,7 @@ var diff = function (oldArr, newArr) {
     var o = oldArr[index]
     if(o.name !== n.name
       || (typeof n.input !== 'undefined' 
-          && o.name !== n.name)
+          && o.input !== n.input)
       || (typeof n.volume !== 'undefined'
          && o.volume !== o.volume))
       upd.push(n)
@@ -221,7 +221,7 @@ var convertIOToElem = function (io) {
 var convertElemToIO = function (e) {
   var io = {}
   io.id = e.getAttribute('data-id')
-  io.name = e.text
+  io.name = e.textContent
   if(e.classList.contains('output')) {
     io.volume = e.getAttribute('data-volume')
     io.input = e.getAttribute('data-input')
@@ -230,6 +230,9 @@ var convertElemToIO = function (e) {
 }
 
 var updateElems = function (elems, actions) {
+  
+  console.log(elems)
+  console.log(actions)
   
   // if there's an add action, 
   //   append a new <io> to the unconnected channel
@@ -257,7 +260,7 @@ var updateElems = function (elems, actions) {
     for(var e in elems) {
       var el = elems[e],
           io = actions.upd[u]
-      if(el.getAttribute('data-id') === io.id) {
+      if(parseInt(el.getAttribute('data-id')) === io.id) {
         el.textContent = io.name
         if(el.classList.contains('output')) {
           var o = el
@@ -313,8 +316,6 @@ var updateElems = function (elems, actions) {
 } 
 
 var destroyConnection = function (output) {
-
-  console.log(output)
   
   var channel = output.parentElement.parentElement
   // if there's only one output connected, we assume 
@@ -336,9 +337,6 @@ var destroyConnection = function (output) {
   }
 }
 var createConnection = function (output, input) {
-
-  console.log(output)
-  console.log(input)
 
   var outputs
 
@@ -367,15 +365,14 @@ var createConnection = function (output, input) {
 
   if(output.parentElement !== null) output.parentElement.removeChild(output)
   outputs.appendChild(output)
-
 }
 
 var extractIOElementsFromContainerElements = function (containerElements) {
   var ioElements = [],
       containers = [].slice.call(containerElements)
-
+  
   for(var c in containers)
-    ioElements.concat(containers[c].getElementsByClassName((containers[c].classList.contains('inputs')? 'input' : 'output')))
+    ioElements = ioElements.concat([].slice.call(containers[c].getElementsByClassName((containers[c].classList.contains('inputs')? 'input' : 'output'))))
 
   return ioElements
 }
@@ -383,6 +380,12 @@ var extractIOElementsFromContainerElements = function (containerElements) {
 var updateDOM = function (actions, type) {
   // fetch all children of outputs & inputs, 
   // ensure all of them are actually io elems
+  
+  // make sure containers are up to date
+  outputContainerElements = document.querySelectorAll('.outputs')
+  inputContainerElements = document.querySelectorAll('.inputs')
+  channels = document.querySelectorAll('.channel:not(.unconnected)')
+  
   var elems = extractIOElementsFromContainerElements(
     (type === 'inputs')? inputContainerElements : outputContainerElements
   ).filter(filterIOElems)
@@ -398,13 +401,14 @@ var putInputs = function (inputs, callback) {
   for(var i in inputs) {
     var input = inputs[i],
         rq = new XMLHttpRequest()
-    rq.addEventListener('load', callback)
+    rq.addEventListener('load', callback.bind(this))
     rq.open('PUT', '/inputs/' + input.id)
     rq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     rq.send()
   }
 }
 var putOutputs = function (outputs, callback) {
+  
   if(outputs.length <= 0) return
   
   for(var o in outputs) {
@@ -413,14 +417,11 @@ var putOutputs = function (outputs, callback) {
     rq.addEventListener('load', callback)
     rq.open('PUT', '/outputs/' + output.id)
     rq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-    console.log(o)
     rq.send('input=' + output.input + '&volume=' + output.volume)
   }
 }
 
 // main cycle.
-// this could cause loading issues if the data src
-// isn't responding quickly (promises would be better)
 var updateInputs = function () {
   getInputs(function (res) {
     var newInputs = JSON.parse(res.target.response).sort(compareIO)
@@ -435,6 +436,7 @@ var updateOutputs = function () {
     outputs = newOutputs
   }.bind(this))
 }
+
 var main = function () {
   updateInputs()
   updateOutputs()
@@ -443,8 +445,16 @@ var main = function () {
 (function () {
   // setup
   configure()
-  main()
-  // setInterval(main.bind(this), 3000)
+  getInputs(function (res) {
+    var newInputs = JSON.parse(res.target.response).sort(compareIO)
+    updateDOM(diff(inputs, newInputs), 'inputs')
+    inputs = newInputs
+    getOutputs(function (res) {
+      var newOutputs = JSON.parse(res.target.response).sort(compareIO)
+      updateDOM(diff(outputs, newOutputs), 'outputs')
+      outputs = newOutputs
+    }.bind(this))
+  }.bind(this))
 })();
 
 /*******************************
@@ -490,14 +500,13 @@ var main = function () {
       if(clickedNode === null) {
         if(mousedownTarget.classList.contains('output')) {
           if(mousedownTarget.getAttribute('data-input') !== null) {
-            mousedownTarget.setAttribute('data-input', null)
-            var i = mousedownTarget.getAttribute('data-input')
-            for(var o in outputs) 
-              if(outputs[o].input !== null && i === outputs[o].input) {
-                var targetOutput = outputs[o]
-                targetOutput.input = null
-                updatedOutputs.push(targetOutput)
+            var clickedOutput = mousedownTarget
+            clickedOutput.setAttribute('data-input', null)
+            for(var o in outputs) {
+              if(outputs[o].input !== null && parseInt(clickedOutput.getAttribute('data-id')) === outputs[o].id) {
+                updatedOutputs.push(convertElemToIO(clickedOutput))
               }
+            }
           }
         }
         // else if (mousedownTarget.classList.contains('volume')) ...
