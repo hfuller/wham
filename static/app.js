@@ -231,9 +231,6 @@ var convertElemToIO = function (e) {
 
 var updateElems = function (elems, actions) {
   
-  console.log(elems)
-  console.log(actions)
-  
   // if there's an add action, 
   //   append a new <io> to the unconnected channel
   for(var a in actions.add) {
