@@ -1,0 +1,20 @@
+@font-face {
+  font-family: 'Phenomena';
+  src: local('Phenomena'), local('Phenomena-Regular'), 
+    url(./phenomena/Phenomena-Regular.otf) format('otf');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Phenomena-ExtraLight';
+  src: local('Phenomena'), local('Phenomena-ExtraLight'),
+    url(./phenomena/Phenomena-ExtraLight.otf) format('otf');
+  font-weight: lighter;
+  font-style: normal;
+}
+
+body {
+  font-family: Phenomena, sans-serif;
+  font-size: 2.3rem;
+  color: white;
+}
