@@ -54,7 +54,7 @@ html, body {
   background-color: #34ab5f;
   margin: 0 8px;
   margin-bottom: -8px;
-  padding: 1rem;
+  padding: 2rem;
   border-radius: 8px;
   box-shadow: 3px 3px 0 #238834;
 }
@@ -63,21 +63,9 @@ html, body {
   box-shadow: 3px 3px 0 #233488;
   margin-top: -8px;
 }
-.input::after {
-  content: ' ';
-  
-  width: 0;
-  height: 0;
-  
-  z-index: 2;
-  
-  position: absolute;
-  top: -10px;
-  left: 34px;
-  border: 10px solid #34ab5f;
-  border-top: none;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
+.selected {
+  background-color: white;
+  color: #34ab5f;
 }
 
 .connection {
