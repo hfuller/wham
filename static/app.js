@@ -328,13 +328,15 @@ var destroyConnection = function (output) {
   }
   // otherwise, just move our input
   else if(output.parentElement.querySelectorAll('.output').length > 1) {
-    // move the output
+    // add the output to the unconnected channel
     unconnectedChannel.querySelector('.outputs').appendChild(output)
-    channel.querySelector('.outputs').removeChild(output)
+    // remove it from its current channel if it's still there
+    if(output.parentElement !== null && output.parentElement.parentElement !== null && output.parentElement.parentElement === channel)
+      channel.querySelector('.outputs').removeChild(output)
   }
 }
 var createConnection = function (output, input) {
-
+  
   var outputs
 
   if (typeof(input) !== 'undefined' && input.parentElement === null)
@@ -538,6 +540,7 @@ var main = function () {
     else clickedNode = null
     
     putOutputs(updatedOutputs, updateOutputs)
+    updatedOutputs = []
   }
   
   var onMousedown = function (e) {
