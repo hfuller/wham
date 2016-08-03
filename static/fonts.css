@@ -1,14 +1,14 @@
 @font-face {
   font-family: 'Phenomena';
   src: local('Phenomena'), local('Phenomena-Regular'), 
-    url(./phenomena/Phenomena-Regular.otf) format('otf');
+    url(./phenomena/Phenomena-Regular.otf) format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Phenomena-ExtraLight';
   src: local('Phenomena'), local('Phenomena-ExtraLight'),
-    url(./phenomena/Phenomena-ExtraLight.otf) format('otf');
+    url(./phenomena/Phenomena-ExtraLight.otf) format('opentype');
   font-weight: lighter;
   font-style: normal;
 }
