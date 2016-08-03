@@ -454,6 +454,7 @@ var main = function () {
       outputs = newOutputs
     }.bind(this))
   }.bind(this))
+  setInterval(main.bind(this), 1000)
 })();
 
 /*******************************
@@ -495,6 +496,10 @@ var main = function () {
       
   var onMouseup = function (e) {
     e.preventDefault()
+    
+    // for determining .selected highlighting
+    var previousClickedNode = clickedNode
+    
     if(mousedownTarget !== null && mousedownTarget === e.target) {
       if(clickedNode === null) {
         if(mousedownTarget.classList.contains('output')) {
@@ -510,14 +515,17 @@ var main = function () {
         }
         // else if (mousedownTarget.classList.contains('volume')) ...
         // else if (mousedownTarget.classList.contains('cancel')) ...
-        else if(mousedownTarget.classList.contains('input'))
+        else if(mousedownTarget.classList.contains('input')) {
           clickedNode = mousedownTarget
+        }
       }
       else if(clickedNode.classList.contains('input')) {
-        if(mousedownTarget === clickedNode)
+        if(mousedownTarget === clickedNode) {
           clickedNode = null
-        else if(mousedownTarget.classList.contains('input'))
+        }
+        else if(mousedownTarget.classList.contains('input')) {
           clickedNode = mousedownTarget
+        }
         else if(mousedownTarget.classList.contains('output')) {
           mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
           var targetOutput = convertElemToIO(mousedownTarget)
@@ -528,19 +536,30 @@ var main = function () {
     }
     else if(mousedownTarget !== null && mousedownTarget.classList.contains('input')) {
       if(e.target.classList.contains('output')) {
-        mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
-        var targetOutput = convertElemToIO(mousedownTarget)
+        e.target.setAttribute('data-input', mousedownTarget.getAttribute('data-id'))
+        var targetOutput = convertElemToIO(e.target)
         for(var o in outputs)
-          if(outputs[o].id === targetOutput.id)
+          if(outputs[o].id === parseInt(targetOutput.id))
             updatedOutputs.push(targetOutput)
         
         clickedNode = null
       }
     }
-    else clickedNode = null
+    else { 
+      clickedNode = null
+    }
     
     putOutputs(updatedOutputs, updateOutputs)
     updatedOutputs = []
+    
+    if(previousClickedNode === null && clickedNode !== null)
+      clickedNode.classList.add('selected')
+    else if(previousClickedNode !== null && clickedNode === null)
+      previousClickedNode.classList.remove('selected')
+    else if(previousClickedNode !== null && clickedNode !== null) {
+      previousClickedNode.classList.remove('selected')
+      clickedNode.classList.add('selected')
+    }
   }
   
   var onMousedown = function (e) {
