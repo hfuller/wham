@@ -13,11 +13,12 @@ html, body {
 .channels {
   flex-wrap: nowrap;
   height: 100%;
+  width: 100%;
 }
 .channel {
   display: flex;
   position: relative;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   flex-direction: column-reverse;
   justify-content: space-between;
   padding: 1rem;
