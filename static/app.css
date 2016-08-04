@@ -49,6 +49,9 @@ html, body {
   justify-content: center;
   min-height: 40%;
 }
+.inputs { 
+  align-items: flex-end;
+}
 
 .input, .output {
   position: relative;
