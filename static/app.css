@@ -45,9 +45,9 @@ html, body {
 }
 
 .inputs, .outputs {
-  height: auto;
   justify-content: center;
-  min-height: 40%;
+  height: auto;
+  flex: 0 0 auto;
 }
 .inputs { 
   align-items: flex-end;
@@ -67,10 +67,29 @@ html, body {
   box-shadow: 3px 3px 0 rgb(100, 80, 24);
   cursor: pointer;
 }
+.input::after {
+  content: '+';
+  color: rgb(100, 80, 24);
+  background-color: rgb(195, 165, 48);
+  font-family: monospace;
+  font-size: 2rem;
+  padding: 0rem 0.6rem 0.2rem 0.6rem;
+  
+  border-top-right-radius: 6px;
+  
+  position: absolute;
+  right: 0; top: 0;
+}
+.input:hover::after, .input.selected::after {
+  background-color: rgb(100, 80, 24);
+  color: rgb(195, 165, 48);
+}
+.input.selected::after {
+  color: white;
+}
 .output {
   background-color: rgb(86, 120, 123);
   box-shadow: 3px 3px 0 rgb(33, 45, 64);
-  margin-top: -8px;
 }
 .output::after {
   display: none;
