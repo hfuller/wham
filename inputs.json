@@ -1,23 +1,23 @@
 [
 	{
 		"id": 1,
-		"name": "Input One"
+		"name": "Source One"
 	},	
     {
 		"id": 2,
-		"name": "Input Two"
+		"name": "Source Two"
 	},	
     {
 		"id": 3,
-		"name": "Input Three"
+		"name": "Source Three"
 	},	
     {
 		"id": 4,
-		"name": "Input Four"
+		"name": "Source Four"
 	},	
     {
 		"id": 5,
-		"name": "Input Five"
+		"name": "Source Five"
 	}
   
 ]	
