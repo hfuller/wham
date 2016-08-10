@@ -83,8 +83,156 @@ var outputContainerElements = document.querySelectorAll('.outputs'),
     DEFAULT_SOURCE_URL = '',
     channels = document.querySelectorAll('.channel:not(.unconnected)'),
     srcURL = '',
-    unconnectedChannel = document.getElementById('unconnected')
+    unconnectedChannel = document.getElementById('unconnected'),
+    // user input stuff
+    clickedNode = null,
+    mousedownTarget = null,
+    updatedOutputs = [],
+    dragged = null
+      
+// input handlers
+var onMouseup = function (e) {
+  e.stopPropagation()
   
+  // for determining .selected highlighting
+  var previousClickedNode = clickedNode
+
+  if(mousedownTarget !== null && mousedownTarget === e.target) {
+    if(clickedNode === null) {
+      if(mousedownTarget.classList.contains('output')) {
+        if(mousedownTarget.getAttribute('data-input') !== null) {
+          var clickedOutput = mousedownTarget
+          clickedOutput.setAttribute('data-input', null)
+          for(var o in outputs) {
+            if(outputs[o].input !== null && parseInt(clickedOutput.getAttribute('data-id')) === outputs[o].id) {
+              updatedOutputs.push(convertElemToIO(clickedOutput))
+            }
+          }
+        }
+      }
+      // else if (mousedownTarget.classList.contains('volume')) ...
+      // else if (mousedownTarget.classList.contains('cancel')) ...
+      else if(mousedownTarget.classList.contains('input')) {
+        clickedNode = mousedownTarget
+      }
+    }
+    else if(clickedNode.classList.contains('input')) {
+      if(mousedownTarget === clickedNode) {
+        clickedNode = null
+      }
+      else if(mousedownTarget.classList.contains('input')) {
+        clickedNode = mousedownTarget
+      }
+      else if(mousedownTarget.classList.contains('output')) {
+        mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
+        var targetOutput = convertElemToIO(mousedownTarget)
+        updatedOutputs.push(targetOutput)
+        clickedNode = null
+      }
+    }
+  }
+  else if(mousedownTarget !== null && mousedownTarget.classList.contains('input')) {
+    if(e.target.classList.contains('output')) {
+      e.target.setAttribute('data-input', mousedownTarget.getAttribute('data-id'))
+      var targetOutput = convertElemToIO(e.target)
+      for(var o in outputs)
+        if(outputs[o].id === parseInt(targetOutput.id))
+          updatedOutputs.push(targetOutput)
+
+      clickedNode = null
+    }
+  }
+  else { 
+    clickedNode = null
+  }
+
+  putOutputs(updatedOutputs, updateOutputs)
+  updatedOutputs = []
+
+  if(previousClickedNode === null && clickedNode !== null)
+    clickedNode.classList.add('selected')
+  else if(previousClickedNode !== null && clickedNode === null)
+    previousClickedNode.classList.remove('selected')
+  else if(previousClickedNode !== null && clickedNode !== null) {
+    previousClickedNode.classList.remove('selected')
+    clickedNode.classList.add('selected')
+  }
+}
+var onMousedown = function (e) {
+  e.stopPropagation()
+  mousedownTarget = e.target
+}
+var onDragStart = function (e) {
+  
+  e.stopPropagation()
+
+  // make sure it's actually an <io>
+  if(!isIOElem(e.target)) 
+    return false
+
+  dragged = e.target
+}
+var onDrag = function (e) {
+  e.stopPropagation()
+
+  // make sure it's actually the thing we think it is
+  if(e.target !== dragged || dragged === null) return false;
+
+  var draggedBox = dragged.getBoundingClientRect()
+  dragged.style.position = 'relative'
+  dragged.style.top = screenY - (dragged.clientHeight / 2)
+  dragged.style.left = screenX - (dragged.clientWidth / 2)
+}  
+var onDragEnd = function (e) {
+  e.stopPropagation()
+  
+
+}
+var onDragOver = function (e) {
+  e.preventDefault()
+}
+var onDrop = function (e) {
+  e.stopPropagation()
+  
+  var io = e.target
+  
+  console.log('drag end:')
+  console.log(io)
+  
+  if(
+    // if it's an <io> AND
+    isIOElem(io)
+    && 
+    (
+      // we dragged an input to an output
+      (io.classList.contains('output') && dragged.classList.contains('input'))
+      // OR
+      ||
+      // we dragged an output to an input
+      (io.classList.contains('input') && dragged.classList.contains('output'))
+    )
+  ) {
+    // figure out which is which
+    var i, o
+    
+    if(io.classList.contains('output'))
+      o = io
+    else i = io
+    
+    if(o !== io)
+      o = dragged
+    else i = dragged
+    
+    console.log('C O O L')
+    o.setAttribute('data-input', i.getAttribute('data-id'))
+    updatedOutputs.push(convertElemToIO(o))
+    
+    putOutputs(updatedOutputs, updateOutputs)
+    updatedOutputs = []
+  }
+}
+
+// set up the app
 var configure = function (opts) {
   // maybe add the ability to seed with other
   // input/output data?
@@ -230,6 +378,16 @@ var convertElemToIO = function (e) {
   return io
 }
 
+var configureInputs = function (io) {
+  io.addEventListener('mousedown', onMousedown)
+  io.addEventListener('mouseup', onMouseup)
+  io.setAttribute('draggable', true)
+  io.addEventListener('dragstart', onDragStart)
+  io.addEventListener('drag', onDrag)
+  io.addEventListener('dragover', onDragOver)
+  io.addEventListener('drop', onDrop)
+}
+
 var updateElems = function (elems, actions) {
   
   // if there's an add action, 
@@ -241,6 +399,8 @@ var updateElems = function (elems, actions) {
       ioElem = unconnectedChannel.querySelector('.outputs').appendChild(ioElem)
     else
       ioElem = unconnectedChannel.querySelector('.inputs').appendChild(ioElem)
+      
+    configureInputs(ioElem)
       
     if(io.hasOwnProperty('input') && io.input !== null) {
       var o = ioElem,
@@ -457,149 +617,3 @@ var main = function () {
   }.bind(this))
   setInterval(main.bind(this), 1000)
 })();
-
-/*******************************
- **    INPUT CONFIGURATION    **
- *******************************/
-(function () {
-  // if a mouseup event comes in,
-  //   then if there was just a mousedown event on the same element,
-  //     then if nothing is clicked,
-  //       then if an output was clicked,
-  //         then if that output is connected,
-  //           then disconnect that output.
-  //         otherwise, do nothing.
-  //       else if an output's volume button was clicked,
-  //         then provide a volume slider UI.
-  //       else if an output's cancel button was clicked,
-  //         then disconnect that output.
-  //       else if an input was clicked,
-  //         then count that input as clicked.
-  //       otherwise, do nothing.
-  //     else if an input is clicked,
-  //       then if the same input was clicked,
-  //         then count that input as unclicked.
-  //       else if an input was clicked,
-  //         then count the more recently-clicked input as clicked instead.
-  //       else if an output was clicked,
-  //         then connect that input to that output and count that input as unclicked.
-  //       otherwise, count the clicked input as unclicked.
-  //     otherwise, do nothing.
-  //   else if there was a mousedown event on an input,
-  //     then if this mouseup event was on an output,
-  //       then connect that input to that output and count everything as unclicked.
-  //     otherwise, do nothing.
-  //   otherwise, count everything as unclicked.
-  
-  var clickedNode = null,
-      mousedownTarget = null,
-      updatedOutputs = [],
-      dragged = null
-      
-  var onMouseup = function (e) {
-    e.preventDefault()
-    
-    // for determining .selected highlighting
-    var previousClickedNode = clickedNode
-    
-    if(mousedownTarget !== null && mousedownTarget === e.target) {
-      if(clickedNode === null) {
-        if(mousedownTarget.classList.contains('output')) {
-          if(mousedownTarget.getAttribute('data-input') !== null) {
-            var clickedOutput = mousedownTarget
-            clickedOutput.setAttribute('data-input', null)
-            for(var o in outputs) {
-              if(outputs[o].input !== null && parseInt(clickedOutput.getAttribute('data-id')) === outputs[o].id) {
-                updatedOutputs.push(convertElemToIO(clickedOutput))
-              }
-            }
-          }
-        }
-        // else if (mousedownTarget.classList.contains('volume')) ...
-        // else if (mousedownTarget.classList.contains('cancel')) ...
-        else if(mousedownTarget.classList.contains('input')) {
-          clickedNode = mousedownTarget
-        }
-      }
-      else if(clickedNode.classList.contains('input')) {
-        if(mousedownTarget === clickedNode) {
-          clickedNode = null
-        }
-        else if(mousedownTarget.classList.contains('input')) {
-          clickedNode = mousedownTarget
-        }
-        else if(mousedownTarget.classList.contains('output')) {
-          mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
-          var targetOutput = convertElemToIO(mousedownTarget)
-          updatedOutputs.push(targetOutput)
-          clickedNode = null
-        }
-      }
-    }
-    else if(mousedownTarget !== null && mousedownTarget.classList.contains('input')) {
-      if(e.target.classList.contains('output')) {
-        e.target.setAttribute('data-input', mousedownTarget.getAttribute('data-id'))
-        var targetOutput = convertElemToIO(e.target)
-        for(var o in outputs)
-          if(outputs[o].id === parseInt(targetOutput.id))
-            updatedOutputs.push(targetOutput)
-        
-        clickedNode = null
-      }
-    }
-    else { 
-      clickedNode = null
-    }
-    
-    putOutputs(updatedOutputs, updateOutputs)
-    updatedOutputs = []
-    
-    if(previousClickedNode === null && clickedNode !== null)
-      clickedNode.classList.add('selected')
-    else if(previousClickedNode !== null && clickedNode === null)
-      previousClickedNode.classList.remove('selected')
-    else if(previousClickedNode !== null && clickedNode !== null) {
-      previousClickedNode.classList.remove('selected')
-      clickedNode.classList.add('selected')
-    }
-  }
-  
-  var onMousedown = function (e) {
-    e.preventDefault()
-    mousedownTarget = e.target
-  }
-  
-  var onDragStart = function (e) {
-    e.preventDefault()
-    
-    console.log('drag started')
-    
-    // make sure it's actually an <io>
-    if(!isIOElem(e.target)) 
-      return false
-    
-    console.log('drag started')
-      
-    dragged = e.target
-    if(dragged.parentElement !== null)
-      dragged.parentElement.removeChild(dragged)
-  }
-  
-  var onDrag = function (e) {
-    e.preventDefault()
-    
-    console.log('dragging')
-    
-    // make sure it's actually the thing we think it is
-    if(e.target !== dragged || dragged === null) return false;
-    
-    var draggedBox = dragged.getBoundingClientRect()
-    dragged.style.position = 'absolute'
-    dragged.style.top = screenY - (dragged.clientHeight / 2)
-    dragged.style.left = screenX - (dragged.clientWidth / 2)
-  }
-  
-  document.addEventListener('mousedown', onMousedown.bind(this))
-  document.addEventListener('mouseup', onMouseup.bind(this))
-  
-})()
