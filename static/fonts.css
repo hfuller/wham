@@ -12,6 +12,16 @@
   font-weight: lighter;
   font-style: normal;
 }
+@font-face {
+  font-family: 'icomoon';
+  src:  url('icomoon/icomoon.eot?wvbw92');
+  src:  url('icomoon/icomoon.eot?wvbw92#iefix') format('embedded-opentype'),
+    url('icomoon/icomoon.ttf?wvbw92') format('truetype'),
+    url('icomoon/icomoon.woff?wvbw92') format('woff'),
+    url('icomoon/icomoon.svg?wvbw92#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
 
 body {
   font-family: Phenomena, sans-serif;
