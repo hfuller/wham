@@ -100,8 +100,8 @@ var configure = function (opts) {
       inputs = getInputs()
     }
   else {   
-    outputs = extractIOElementsFromContainerElements(outputContainerElements).filter(filterIOElems)
-    inputs = extractIOElementsFromContainerElements(inputContainerElements).filter(filterIOElems)
+    outputs = extractIOElementsFromContainerElements(outputContainerElements).filter(isIOElem)
+    inputs = extractIOElementsFromContainerElements(inputContainerElements).filter(isIOElem)
     outputs.forEach(function (e, i, a) { a[i] = convertElemToIO(e) })
     inputs.forEach(function (e, i, a) { a[i] = convertElemToIO(e) })
   }
@@ -189,7 +189,7 @@ var diff = function (oldArr, newArr) {
 
 // array.filter callback for removing elems that
 // are not inputs or outputs
-var filterIOElems = function (e) {
+var isIOElem = function (e) {
   return (typeof e.getAttribute('data-id') !== 'undefined')
 }
 
@@ -212,6 +212,7 @@ var convertIOToElem = function (io) {
   e.classList.add(isInput ? 'input' : 'output')
   e.setAttribute('data-id', io.id)
   e.textContent = io.name
+  e.setAttribute('draggable', true)
   if(!isInput) e.setAttribute('data-input', (io.input === null)? '' : io.input)
   if(!isInput) e.setAttribute('data-volume', io.volume)
   return e
@@ -387,7 +388,7 @@ var updateDOM = function (actions, type) {
   
   var elems = extractIOElementsFromContainerElements(
     (type === 'inputs')? inputContainerElements : outputContainerElements
-  ).filter(filterIOElems)
+  ).filter(isIOElem)
 
   if(hasActionsToTake(actions))
     updateElems(elems, actions)
@@ -492,7 +493,8 @@ var main = function () {
   
   var clickedNode = null,
       mousedownTarget = null,
-      updatedOutputs = []
+      updatedOutputs = [],
+      dragged = null
       
   var onMouseup = function (e) {
     e.preventDefault()
@@ -565,6 +567,36 @@ var main = function () {
   var onMousedown = function (e) {
     e.preventDefault()
     mousedownTarget = e.target
+  }
+  
+  var onDragStart = function (e) {
+    e.preventDefault()
+    
+    console.log('drag started')
+    
+    // make sure it's actually an <io>
+    if(!isIOElem(e.target)) 
+      return false
+    
+    console.log('drag started')
+      
+    dragged = e.target
+    if(dragged.parentElement !== null)
+      dragged.parentElement.removeChild(dragged)
+  }
+  
+  var onDrag = function (e) {
+    e.preventDefault()
+    
+    console.log('dragging')
+    
+    // make sure it's actually the thing we think it is
+    if(e.target !== dragged || dragged === null) return false;
+    
+    var draggedBox = dragged.getBoundingClientRect()
+    dragged.style.position = 'absolute'
+    dragged.style.top = screenY - (dragged.clientHeight / 2)
+    dragged.style.left = screenX - (dragged.clientWidth / 2)
   }
   
   document.addEventListener('mousedown', onMousedown.bind(this))
