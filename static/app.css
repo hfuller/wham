@@ -66,6 +66,7 @@ html, body {
   border-radius: 8px;
   box-shadow: 3px 3px 0 rgb(100, 80, 24);
   cursor: pointer;
+  text-align: center;
 }
 .input::after {
   content: '+';
