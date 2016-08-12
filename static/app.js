@@ -100,7 +100,7 @@ var onMouseup = function (e) {
   if(mousedownTarget !== null && mousedownTarget === e.target) {
     if(clickedNode === null) {
       if(mousedownTarget.classList.contains('output')) {
-        if(mousedownTarget.getAttribute('data-input') !== null) {
+        if(mousedownTarget.getAttribute('data-input') !== 'null' && mousedownTarget.getAttribute('data-input') !== '') {
           var clickedOutput = mousedownTarget
           clickedOutput.setAttribute('data-input', null)
           for(var o in outputs) {
@@ -109,6 +109,7 @@ var onMouseup = function (e) {
             }
           }
         }
+        else clickedNode = mousedownTarget
       }
       // else if (mousedownTarget.classList.contains('volume')) ...
       // else if (mousedownTarget.classList.contains('cancel')) ...
@@ -117,12 +118,10 @@ var onMouseup = function (e) {
       }
     }
     else if(clickedNode.classList.contains('input')) {
-      if(mousedownTarget === clickedNode) {
+      if(mousedownTarget === clickedNode)
         clickedNode = null
-      }
-      else if(mousedownTarget.classList.contains('input')) {
+      else if(mousedownTarget.classList.contains('input'))
         clickedNode = mousedownTarget
-      }
       else if(mousedownTarget.classList.contains('output')) {
         mousedownTarget.setAttribute('data-input', clickedNode.getAttribute('data-id'))
         var targetOutput = convertElemToIO(mousedownTarget)
@@ -130,6 +129,19 @@ var onMouseup = function (e) {
         clickedNode = null
       }
     }
+    else if(clickedNode.classList.contains('output')) {
+      if(mousedownTarget === clickedNode)
+        clickedNode = null
+      else if(mousedownTarget.classList.contains('output')) 
+        clickedNode = mousedownTarget
+      else if(mousedownTarget.classList.contains('input')) {
+        clickedNode.setAttribute('data-input', mousedownTarget.getAttribute('data-id'))
+        var targetOutput = convertElemToIO(clickedNode)
+        updatedOutputs.push(targetOutput)
+        clickedNode = null
+      }
+    }
+    else clickedNode = null
   }
   else if(mousedownTarget !== null && mousedownTarget.classList.contains('input')) {
     if(e.target.classList.contains('output')) {
@@ -162,8 +174,7 @@ var onMousedown = function (e) {
   e.stopPropagation()
   mousedownTarget = e.target
 }
-var onDragStart = function (e) {
-  
+var onDragStart = function (e) { 
   e.stopPropagation()
 
   // make sure it's actually an <io>
@@ -196,9 +207,6 @@ var onDrop = function (e) {
   
   var io = e.target
   
-  console.log('drag end:')
-  console.log(io)
-  
   if(
     // if it's an <io> AND
     isIOElem(io)
@@ -223,7 +231,6 @@ var onDrop = function (e) {
       o = dragged
     else i = dragged
     
-    console.log('C O O L')
     o.setAttribute('data-input', i.getAttribute('data-id'))
     updatedOutputs.push(convertElemToIO(o))
     
@@ -247,7 +254,7 @@ var configure = function (opts) {
       outputs = getOutputs()
       inputs = getInputs()
     }
-  else {   
+  else {
     outputs = extractIOElementsFromContainerElements(outputContainerElements).filter(isIOElem)
     inputs = extractIOElementsFromContainerElements(inputContainerElements).filter(isIOElem)
     outputs.forEach(function (e, i, a) { a[i] = convertElemToIO(e) })
