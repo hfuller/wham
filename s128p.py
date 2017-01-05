@@ -2,6 +2,20 @@ from __future__ import print_function
 from serial import Serial
 import io
 
+class Zone(object):
+    def __init__(self, parent, number):
+        print("init zone " + str(number))
+        self.parent = parent
+        self.number = number
+        print("volume: " + str(self.volume))
+
+    @property
+    def volume(self):
+        result = self.parent.send("VOL," + str(self.number).zfill(2) + "?")
+        result = result.split(',', 2)
+        return int(result[2])
+
+
 class S128P(object):
     def __init__(self):
         print("s128p comms init")
