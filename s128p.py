@@ -18,8 +18,8 @@ class Zone(object):
 
 class S128P(object):
     def __init__(self):
-        print("s128p comms init")
-        self.port = Serial('/dev/ttyUSB1', 19200, timeout=0.2) #0.2s timeout from protocol doc
+        print("init s128p")
+        self.port = Serial('/dev/ttyUSB1', 19200, timeout=1) #0.2s timeout from protocol doc
         if self.connected:
             print("connected ok!")
         else:
