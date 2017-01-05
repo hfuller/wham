@@ -31,20 +31,39 @@ class S128P(object):
 
     def send(self, command):
         x = "&S12," + command
-        print("sending: " + x)
-        self.port.write(x + '\r')
-        self.port.write(x + '\r')
-        self.port.flush()
-        self.port.reset_input_buffer()
-
         result = ""
-        ch = "X"
-        while len(ch) > 0 and ch != '\r':
+        ch = None
+
+        while ch == None:
+            #we have not received a character. We need to send the command.
+            print("sending: " + x)
+            self.port.write(x + '\r')
+            self.port.flush()
+            self.port.reset_input_buffer()
+            print("waiting")
             ch = self.port.read()
+
+        while ch != '\r':
             result += ch
+            ch = self.port.read()
+        #Now you would think we would lose the last character here, because
+        #I just read it but didnt push it onto the string.
+        #But I have some good news for you: the last character is always \r.
+
         print("    got: " + result)
-        return result
+        result = result.split(',', 1)
+        return result[1] 
+
+    def get_zone_count(self):
+        resp = self.send("LSD,1?")
+        resp = resp.split(',', 2)
+        print (resp[2])
+        return len(resp[2])
+
 
     @property
     def connected(self):
-        return "&S12,SYSOFF" in self.send("SYSOFF?")
+        return "SYSOFF" in self.send("SYSOFF?")
+
+
+
