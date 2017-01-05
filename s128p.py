@@ -25,6 +25,10 @@ class S128P(object):
         else:
             print("not connected.")
 
+        print("init zones: ")
+        self.zones = [Zone(self, i) for i in range(1, self.get_zone_count()+1)]
+        print("init zones done")
+
     def send(self, command):
         x = "&S12," + command
         print("sending: " + x)
