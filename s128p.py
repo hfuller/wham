@@ -2,32 +2,42 @@ from __future__ import print_function
 from serial import Serial
 import io
 
-class Zone(object):
-    def __init__(self, parent, number):
-        print("init zone " + str(number))
-        self.parent = parent
-        self.number = number
-        print("volume: " + str(self.volume))
+class Output(object):
+    def __init__(self, number):
+        print("init output " + str(number))
+        self.id = number
+        self.name = "Zone " + str(self.id)
+        self.input = 0
+        self.volume = 35
 
-    @property
-    def volume(self):
-        result = self.parent.send("VOL," + str(self.number).zfill(2) + "?")
-        result = result.split(',', 2)
-        return int(result[2])
+class Input(object):
+    def __init__(self, number):
+        print("init input " + str(number))
+        self.id = number
+        self.name = "Source " + str(self.id)
+
 
 
 class S128P(object):
     def __init__(self):
         print("init s128p")
         self.port = Serial('/dev/ttyUSB1', 19200, timeout=1) #0.2s timeout from protocol doc
-        if self.connected:
+        if self.is_connected():
             print("connected ok!")
         else:
             print("not connected.")
 
-        print("init zones: ")
-        self.zones = [Zone(self, i) for i in range(1, self.get_zone_count()+1)]
-        print("init zones done")
+        print("init outputs")
+        self.outputs = [Output(i) for i in range(1, self.get_output_count()+1)]
+        print("Doing initial download of output data")
+        self.refresh_output_data()
+        print("outputs done")
+
+        print("init inputs")
+        self.inputs = [Input(i) for i in range(1, self.get_input_count()+1)]
+        print("Doing initial download of input data")
+        self.refresh_input_data()
+        print("inputs done")
 
     def send(self, command):
         x = "&S12," + command
@@ -54,15 +64,45 @@ class S128P(object):
         result = result.split(',', 1)
         return result[1] 
 
-    def get_zone_count(self):
+
+    def get_local_source_detect(self):
         resp = self.send("LSD,1?")
         resp = resp.split(',', 2)
-        print (resp[2])
-        return len(resp[2])
+        return resp[2]
+    def get_output_count(self):
+        return len(self.get_local_source_detect())
+
+    def get_input_detect(self):
+        resp = self.send("ASD,1?")
+        resp = resp.split(',', 2)
+        return resp[2]
+    def get_input_count(self):
+        return len(self.get_input_detect())
 
 
-    @property
-    def connected(self):
+    def refresh_output_data(self):
+        for output in self.outputs:
+            output.input = self.get_selected_input(output.id)
+            output.volume = self.get_volume(output.id)
+    
+    def refresh_input_data(self):
+        detect = list(self.get_input_detect())
+        print(detect)
+        for input in self.inputs:
+            input.active = bool(int(detect[input.id-1]))
+
+
+    def get_selected_input(self, output_id):
+        result = self.send("SRC," + str(output_id).zfill(2) + "?")
+        result = result.split(',')
+        return int(result[2])
+
+    def get_volume(self, output_id):
+        result = self.send("VOL," + str(output_id).zfill(2) + "?")
+        result = result.split(',')
+        return int(result[2])
+
+    def is_connected(self):
         return "SYSOFF" in self.send("SYSOFF?")
 
 
