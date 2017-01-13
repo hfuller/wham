@@ -7,7 +7,7 @@ class Output(object):
         print("init output " + str(number))
         self.id = number
         self.name = "Zone " + str(self.id)
-        self.input = 0
+        self.input = None
         self.volume = 35
 
 class Input(object):
@@ -21,7 +21,7 @@ class Input(object):
 class S128P(object):
     def __init__(self):
         print("init s128p")
-        self.port = Serial('/dev/ttyUSB1', 19200, timeout=1) #0.2s timeout from protocol doc
+        self.port = Serial('/dev/tty.usbserial-141', 19200, timeout=1) #0.2s timeout from protocol doc
         if self.is_connected():
             print("connected ok!")
         else:
@@ -95,7 +95,8 @@ class S128P(object):
     def get_selected_input(self, output_id):
         result = self.send("SRC," + str(output_id).zfill(2) + "?")
         result = result.split(',')
-        return int(result[2])
+        result = None if int(result[2]) == 0 else int(result[2])
+        return result
 
     def get_volume(self, output_id):
         result = self.send("VOL," + str(output_id).zfill(2) + "?")
