@@ -21,7 +21,7 @@ class Input(object):
 class S128P(object):
     def __init__(self):
         print("init s128p")
-        self.port = Serial('/dev/ttyUSB1', 19200, timeout=1) #0.2s timeout from protocol doc
+        self.port = Serial('/dev/ttyUSB1', 19200, timeout=1.0) #0.2s timeout from protocol doc
         if self.is_connected():
             print("connected ok!")
         else:
@@ -44,7 +44,7 @@ class S128P(object):
         result = ""
         ch = None
 
-        while ch == None:
+        while ch == '' or ch == None:
             #we have not received a character. We need to send the command.
             print("sending: " + x)
             self.port.write(x + '\r')
