@@ -7,7 +7,7 @@ class Output(object):
         print("init output " + str(number))
         self.id = number
         self.name = "Zone " + str(self.id)
-        self.input = 0
+        self.input = None
         self.volume = 35
 
 class Input(object):
@@ -95,7 +95,10 @@ class S128P(object):
     def get_selected_input(self, output_id):
         result = self.send("SRC," + str(output_id).zfill(2) + "?")
         result = result.split(',')
-        return int(result[2])
+        temp = int(result[2])
+        if temp == 0:
+                temp = None
+        return temp
 
     def get_volume(self, output_id):
         result = self.send("VOL," + str(output_id).zfill(2) + "?")
