@@ -14,8 +14,7 @@ def homepage():
 
 @app.route('/inputs/')
 def get_inputs():
-	#return jsonpickle.encode(list(input.id for input in controller.inputs), unpicklable=False)
-        return jsonpickle.encode(controller.inputs, unpicklable=False)
+    return jsonpickle.encode(controller.inputs, unpicklable=False)
 @app.route('/inputs/<int:id>', methods=['GET'])
 def get_input(id):
 	return jsonpickle.encode(controller.inputs[int(id)], unpicklable=False)
@@ -23,8 +22,7 @@ def get_input(id):
 #TODO: remove duplication here.
 @app.route('/outputs/')
 def get_outputs():
-	#return jsonpickle.encode(list(output.id for output in controller.outputs), unpicklable=False)
-        return jsonpickle.encode(controller.outputs, unpicklable=False)
+	return jsonpickle.encode(controller.outputs, unpicklable=False)
 @app.route('/outputs/<int:id>', methods=['GET'])
 def get_output(id):
 	return jsonpickle.encode(controller.outputs[int(id)], unpicklable=False)
@@ -33,13 +31,13 @@ def put_output(id):
 	print request.form
 
 	try:
-		controller.set_volume(id, int(request.form['volume']))
-	except KeyError:
-		print "not updating volume"
-	try:
 		controller.set_input(id, jsonpickle.decode(request.form['input'])) #handle ints or 'null'
 	except KeyError:
 		print "not updating input" 
+	try:
+		controller.set_volume(id, jsonpickle.decode(request.form['volume']))
+	except KeyError:
+		print "not updating volume"
 
 	print controller.outputs[id]
 	return ('',200)

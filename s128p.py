@@ -21,7 +21,7 @@ class Input(object):
 class S128P(object):
     def __init__(self):
         print("init s128p")
-        self.port = Serial('/dev/ttyUSB1', 19200, timeout=1) #0.2s timeout from protocol doc
+        self.port = Serial('/dev/ttyUSB1', 19200, timeout=1.0) #0.2s timeout from protocol doc
         if self.is_connected():
             print("connected ok!")
         else:
@@ -91,7 +91,9 @@ class S128P(object):
         for input in self.inputs:
             input.active = bool(int(detect[input.id-1]))
 
-
+    # this fetches the input of a particular OUTPUT.
+    # this does NOT get, e.g. input 3 -- it gets the
+    # input connected to output 3, if any.
     def get_selected_input(self, output_id):
         result = self.send("SRC," + str(output_id).zfill(2) + "?")
         result = result.split(',')
@@ -99,6 +101,12 @@ class S128P(object):
         if temp == 0:
                 temp = None
         return temp
+
+    def set_input(self, output_id, input_id):
+        if input_id is None:
+            input_id = 0
+        result = self.send("SRC," + str(output_id).zfill(2) + ',' + str(input_id).zfill(2))
+        return
 
     def get_volume(self, output_id):
         result = self.send("VOL," + str(output_id).zfill(2) + "?")
