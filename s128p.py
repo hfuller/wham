@@ -44,7 +44,7 @@ class S128P(object):
         result = ""
         ch = None
 
-        while ch == None:
+        while ch == '' or ch == None:
             #we have not received a character. We need to send the command.
             print("sending: " + x)
             self.port.write(x + '\r')
