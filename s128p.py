@@ -102,6 +102,12 @@ class S128P(object):
                 temp = None
         return temp
 
+    def set_input(self, output_id, input_id):
+        if input_id is None:
+            input_id = 0
+        result = self.send("SRC," + str(output_id).zfill(2) + ',' + str(input_id).zfill(2))
+        return
+
     def get_volume(self, output_id):
         result = self.send("VOL," + str(output_id).zfill(2) + "?")
         result = result.split(',')
