@@ -31,13 +31,13 @@ def put_output(id):
 	print request.form
 
 	try:
-		controller.set_volume(id, int(request.form['volume']))
-	except KeyError:
-		print "not updating volume"
-	try:
 		controller.set_input(id, jsonpickle.decode(request.form['input'])) #handle ints or 'null'
 	except KeyError:
 		print "not updating input" 
+	try:
+		controller.set_volume(id, jsonpickle.decode(request.form['volume']))
+	except KeyError:
+		print "not updating volume"
 
 	print controller.outputs[id]
 	return ('',200)
