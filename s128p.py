@@ -91,7 +91,9 @@ class S128P(object):
         for input in self.inputs:
             input.active = bool(int(detect[input.id-1]))
 
-
+    # this fetches the input of a particular OUTPUT.
+    # this does NOT get, e.g. input 3 -- it gets the
+    # input connected to output 3, if any.
     def get_selected_input(self, output_id):
         result = self.send("SRC," + str(output_id).zfill(2) + "?")
         result = result.split(',')
