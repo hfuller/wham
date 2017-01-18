@@ -103,10 +103,11 @@ class S128P(object):
         return temp
 
     def set_input(self, output_id, input_id):
-        if input_id is None:
-            input_id = 0
-        result = self.send("SRC," + str(output_id).zfill(2) + ',' + str(input_id).zfill(2))
-        return
+        result = self.send("SRC," + str(output_id).zfill(2) + ',' + str(input_id if input_id != None else 0).zfill(2))
+        if result[0:3] == "ACK":
+            self.outputs[output_id].input = input_id
+        else:
+            print("didn't get ack. :( got:", result[0:3])
 
     def get_volume(self, output_id):
         result = self.send("VOL," + str(output_id).zfill(2) + "?")
