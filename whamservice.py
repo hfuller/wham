@@ -35,7 +35,7 @@ def put_output(id):
 	except KeyError:
 		print "not updating input" 
 
-	print controller.outputs[id]
+	print controller.outputs[id-1]
 	return ('',200)
 
 if __name__ == '__main__':

@@ -105,7 +105,7 @@ class S128P(object):
     def set_input(self, output_id, input_id):
         result = self.send("SRC," + str(output_id).zfill(2) + ',' + str(input_id if input_id != None else 0).zfill(2))
         if result[0:3] == "ACK":
-            self.outputs[output_id].input = input_id
+            self.outputs[output_id-1].input = input_id
         else:
             print("didn't get ack. :( got:", result[0:3])
 
