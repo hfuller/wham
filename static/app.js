@@ -432,7 +432,7 @@ var updateElems = function (elems, actions) {
           o.setAttribute('data-volume', io.volume)
           var inputString = (io.input === null)? '' : null
           if(o.getAttribute('data-input') !== inputString) {
-            var i = document.querySelector('.input[data-id="' + o.getAttribute('data-input') + '"]')
+            var i = document.querySelector('.input[data-id="' + io.input + '"]')
             // destroying a connection
             if(inputString === '' && (o.getAttribute('data-input') !== undefined && o.getAttribute('data-input') !== null)) {
               destroyConnection(o)
