@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, redirect, request
+from flask import Flask, redirect, request, Response
 import jsonpickle
 from s128p import S128P
 
@@ -22,10 +22,10 @@ def get_input(id):
 #TODO: remove duplication here.
 @app.route('/outputs/')
 def get_outputs():
-	return jsonpickle.encode(controller.outputs, unpicklable=False)
+	return Response(jsonpickle.encode(controller.outputs, unpicklable=False), mimetype="application/json")
 @app.route('/outputs/<int:id>', methods=['GET'])
 def get_output(id):
-	return jsonpickle.encode(controller.outputs[int(id)], unpicklable=False)
+	return Response(jsonpickle.encode(controller.outputs[int(id)], unpicklable=False), mimetype="application/json")
 @app.route('/outputs/<int:id>', methods=['PUT'])
 def put_output(id):
 	print request.form
