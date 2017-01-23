@@ -507,7 +507,7 @@ var createConnection = function (output, input) {
   
   var outputs
 
-  if (typeof(input) !== 'undefined' && input.parentElement === null)
+  if (typeof input !== 'undefined' && input.parentElement === null)
     unconnectedChannel.querySelector('.inputs').appendChild(input)
 
   else if(input.parentElement.parentElement === unconnectedChannel) {
