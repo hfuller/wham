@@ -1,6 +1,7 @@
 from __future__ import print_function
 from serial import Serial
 import io
+from threading import Lock
 
 class Output(object):
     def __init__(self, number):
@@ -20,6 +21,9 @@ class Input(object):
 
 class S128P(object):
     def __init__(self):
+        print("Init lock.")
+        self.lock = Lock()
+
         print("init s128p")
         self.port = Serial('/dev/ttyUSB0', 19200, timeout=1.0) #0.2s timeout from protocol doc
         if self.is_connected():
@@ -40,6 +44,9 @@ class S128P(object):
         print("inputs done")
 
     def send(self, command):
+        self.lock.acquire()
+        print("got lock for", command)
+
         x = "&S12," + command
         result = ""
         ch = None
@@ -61,6 +68,9 @@ class S128P(object):
         #But I have some good news for you: the last character is always \r.
 
         print("    got: " + result)
+        print("Releasing lock for", command)
+        self.lock.release()
+
         result = result.split(',', 1)
         return result[1] 
 

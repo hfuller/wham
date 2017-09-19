@@ -39,7 +39,7 @@ def put_output(id):
 	return ('',200)
 
 if __name__ == '__main__':
-	app.debug = True
+	app.debug = False
 
 	#with open('inputs.json') as f: inputs = json.loads(f.read())
 	#with open('outputs.json') as f: outputs = json.loads(f.read())
