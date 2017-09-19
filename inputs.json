@@ -1,23 +1,23 @@
 [
-	{
-		"id": 1,
-		"name": "Source One"
-	},	
     {
-		"id": 2,
-		"name": "Source Two"
-	},	
+        "id": 1,
+        "name": "Source One"
+    },    
     {
-		"id": 3,
-		"name": "Source Three"
-	},	
+        "id": 2,
+        "name": "Source Two"
+    },    
     {
-		"id": 4,
-		"name": "Source Four"
-	},	
+        "id": 3,
+        "name": "Source Three"
+    },    
     {
-		"id": 5,
-		"name": "Source Five"
-	}
+        "id": 4,
+        "name": "Source Four"
+    },    
+    {
+        "id": 5,
+        "name": "Source Five"
+    }
   
-]	
+]    

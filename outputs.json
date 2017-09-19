@@ -1,8 +1,8 @@
 [
-	{
-		"id": 1,
-		"name": "Office"
-	},
+    {
+        "id": 1,
+        "name": "Office"
+    },
     {
         "id": 2,
         "name": "Kitchen"
@@ -15,4 +15,4 @@
         "id": 4,
         "name": "Main Shop"
     }
-]	
+]    
