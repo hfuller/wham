@@ -2,12 +2,14 @@
     {
         "id": 1,
         "name": "Shop",
-        "default_input": 1
+        "default_input": 1,
+        "default_volume": 100
     },
     {
         "id": 2,
         "name": "Office",
-        "default_input": 2
+        "default_input": 2,
+        "default_volume": 100
     },
     {
         "id": 3,
