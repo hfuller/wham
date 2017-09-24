@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
 from flask import Flask, redirect, request, Response
+from time import sleep
+from datetime import datetime, timedelta
 import jsonpickle
+import threading
+import json
 from s128p import S128P
 
 app = Flask(__name__)
@@ -38,28 +42,76 @@ def put_output(id):
 	print controller.outputs[id-1]
 	return ('',200)
 
+def refresh_thread():
+	global last_active
+
+	while True:
+		sleep(5)
+		print "Refreshing"
+		controller.refresh_input_data()
+		controller.refresh_output_data()
+
+		now = datetime.now()
+
+		for input in controller.inputs:
+			if input.active:
+				last_active[input.id] = now
+		
+		for output in controller.outputs:
+			try:
+				if output.input == None or last_active[output.input] < now - timedelta(seconds=8):
+					controller.set_input(output.id, output.default_input)
+					print "reset " + str(output.id) + " to " + str(output.default_input)
+				else:
+					print output.id, "last active", last_active[output.input]
+			except TypeError:
+				pass
+				
+					
+
 if __name__ == '__main__':
 	app.debug = False
 
-	#with open('inputs.json') as f: inputs = json.loads(f.read())
-	#with open('outputs.json') as f: outputs = json.loads(f.read())
+	controller = S128P()
+
+	with open('inputs.json') as f: config_inputs = json.loads(f.read())
+	with open('outputs.json') as f: config_outputs = json.loads(f.read())
 
 	#convert them to dicts
-	#inputs = dict(zip([x['id'] for x in inputs], inputs))
-	#outputs = dict(zip([x['id'] for x in outputs], outputs))
+	config_inputs = dict(zip([x['id'] for x in config_inputs], config_inputs))
+	config_outputs = dict(zip([x['id'] for x in config_outputs], config_outputs))
 	
-	#prep outputs reasonably
-	#print outputs
-	#for id in outputs:
-	#	outputs[id]['volume'] = 50
-	#	outputs[id]['input'] = None
+	for output in controller.outputs:
+		try:
+			output.name = config_outputs[output.id]['name']
+			print "output", output.id, "=", output.name
+			try:
+				output.default_input = config_outputs[output.id]['default_input']
+			except KeyError:
+				output.default_input = None
+		except KeyError:
+			print "No config for output", output.id, "- disabling"
+			output.enabled = False
 
-        controller = S128P()
+	for input in controller.inputs:
+		try:
+			input.name = config_inputs[input.id]['name']
+			print "input", input.id, "=", input.name
+		except KeyError:
+			print "No config for input", input.id, "- disabling"
+			input.enabled = False
 
-        if app.debug:
-                print "INPUTS: " + jsonpickle.encode(controller.inputs, unpicklable=False)
-                print "OUTPUTS: " + jsonpickle.encode(controller.outputs, unpicklable=False)
-        
+
+	print "INPUTS: " + jsonpickle.encode(controller.inputs, unpicklable=False)
+	print "OUTPUTS: " + jsonpickle.encode(controller.outputs, unpicklable=False)
+
+	last_active = [datetime.now() for input in controller.inputs]
+	print(last_active)
+
+	print "Starting refresh thread"
+	thread = threading.Thread(target=refresh_thread)
+	thread.start()
+	
 	app.run(host='0.0.0.0')
 
 
