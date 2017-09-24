@@ -71,6 +71,13 @@ html, body {
   position: absolute;
   left: -2.8rem;
 }
+.channel h1 {
+  font-family: monospace;
+  color: rgb(103, 103, 83);
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
 
 .input, .output {
   position: relative;
