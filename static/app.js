@@ -591,14 +591,14 @@ var putOutputs = function (outputs, callback) {
 // main cycle.
 var updateInputs = function () {
   getInputs(function (res) {
-    var newInputs = JSON.parse(res.target.response).sort(compareIO)
+    var newInputs = JSON.parse(res.target.response).filter(input => input.enabled).sort(compareIO)
     updateDOM(diff(inputs, newInputs), 'inputs')
     inputs = newInputs
   }.bind(this))
 }
 var updateOutputs = function () {
   getOutputs(function (res) {
-    var newOutputs = JSON.parse(res.target.response).sort(compareIO)
+    var newOutputs = JSON.parse(res.target.response).filter(output => output.enabled).sort(compareIO)
     updateDOM(diff(outputs, newOutputs), 'outputs')
     outputs = newOutputs
   }.bind(this))
