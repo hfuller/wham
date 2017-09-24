@@ -50,7 +50,7 @@ class S128P(object):
 
     def send(self, command):
         self.lock.acquire()
-        print("got lock for", command)
+        if self.debug: print("got lock for", command)
 
         x = "&S12," + command
         result = ""
