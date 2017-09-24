@@ -24,6 +24,8 @@ class Input(object):
 
 class S128P(object):
     def __init__(self):
+	self.debug = False
+
         print("Init lock.")
         self.lock = Lock()
 
@@ -56,11 +58,11 @@ class S128P(object):
 
         while ch == '' or ch == None:
             #we have not received a character. We need to send the command.
-            print("sending: " + x)
+            if self.debug: print("sending: " + x)
             self.port.write(x + '\r')
             self.port.flush()
             self.port.reset_input_buffer()
-            print("waiting")
+            if self.debug: print("waiting")
             ch = self.port.read()
 
         while ch != '\r':
@@ -70,8 +72,8 @@ class S128P(object):
         #I just read it but didnt push it onto the string.
         #But I have some good news for you: the last character is always \r.
 
-        print("    got: " + result)
-        print("Releasing lock for", command)
+        if self.debug: print("    got: " + result)
+        if self.debug: print("Releasing lock for", command)
         self.lock.release()
 
         result = result.split(',', 1)
@@ -100,7 +102,7 @@ class S128P(object):
     
     def refresh_input_data(self):
         detect = list(self.get_input_detect())
-        print(detect)
+        if self.debug: print(detect)
         for input in self.inputs:
             input.active = bool(int(detect[input.id-1]))
 
