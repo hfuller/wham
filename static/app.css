@@ -73,6 +73,7 @@ html, body {
 }
 .channel h1 {
   font-family: monospace;
+  font-size: 2rem;
   color: rgb(103, 103, 83);
   text-align: center;
   margin: 0;
