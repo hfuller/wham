@@ -77,8 +77,12 @@ class S128P(object):
         if self.debug: print("Releasing lock for", command)
         self.lock.release()
 
-        result = result.split(',', 1)
-        return result[1] 
+        try:
+            result = result.split(',', 1)
+            return result[1] 
+        except:
+            print("Bogus shit returned:", result)
+            return ""
 
 
     def get_local_source_detect(self):
