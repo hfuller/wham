@@ -483,6 +483,12 @@ var updateElems = function (elems, actions) {
 var destroyConnection = function (output) {
   
   var channel = output.parentElement.parentElement
+
+  // if we're calling this on something that is
+  // already not connected, do nothing
+  if(channel === unconnectedChannel) return; 
+
+
   // if there's only one output connected, we assume 
   // that it's this output, so let's move it,
   // move the input and then kill this channel
