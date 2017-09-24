@@ -62,10 +62,15 @@ def refresh_thread():
 
                 for output in controller.outputs:
                         try:
-                                print output.id, "input", output.input
+                                if not output.enabled:
+                                        print output.id, "output disabled - input", output.input
+                                        continue
                                 if output.input == None or last_active[output.input] < now - timedelta(seconds=8):
-                                        controller.set_input(output.id, output.default_input)
-                                        print "reset " + str(output.id) + " to " + str(output.default_input)
+                                        if output.default_input != None and last_active[output.default_input] < now - timedelta(seconds=8):
+                                                controller.set_input(output.id, output.default_input)
+                                                print "reset " + str(output.id) + " to " + str(output.default_input)
+                                        else:
+                                                print "Not resetting", output.id, "because its default_input", output.default_input, "is not idle"
                                 else:
                                         print output.id, "last active", last_active[output.input]
                         except TypeError:
