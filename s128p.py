@@ -10,12 +10,15 @@ class Output(object):
         self.name = "Zone " + str(self.id)
         self.input = None
         self.volume = 35
+	self.default_input = None
+	self.enabled = True
 
 class Input(object):
     def __init__(self, number):
         print("init input " + str(number))
         self.id = number
         self.name = "Source " + str(self.id)
+	self.enabled = True
 
 
 

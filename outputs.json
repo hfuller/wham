@@ -1,18 +1,17 @@
 [
     {
         "id": 1,
-        "name": "Office"
+        "name": "Shop",
+        "default_input": 1
     },
     {
         "id": 2,
-        "name": "Kitchen"
+        "name": "Office",
+        "default_input": 2
     },
     {
         "id": 3,
-        "name": "Loft"
-    },
-    {
-        "id": 4,
-        "name": "Main Shop"
+        "name": "Test",
+        "default_input": 2
     }
-]    
+]
