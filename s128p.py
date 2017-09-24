@@ -10,21 +10,22 @@ class Output(object):
         self.name = "Zone " + str(self.id)
         self.input = None
         self.volume = 35
-	self.default_input = None
-	self.enabled = True
+        self.default_input = None
+        self.default_volume = 35
+        self.enabled = True
 
 class Input(object):
     def __init__(self, number):
         print("init input " + str(number))
         self.id = number
         self.name = "Source " + str(self.id)
-	self.enabled = True
+        self.enabled = True
 
 
 
 class S128P(object):
     def __init__(self):
-	self.debug = False
+        self.debug = True
 
         print("Init lock.")
         self.lock = Lock()
@@ -129,11 +130,22 @@ class S128P(object):
             self.outputs[output_id-1].input = input_id
         else:
             print("didn't get ack. :( got:", result[0:3])
+        
+        try:
+            self.set_volume(output_id, self.outputs[output_id-1].default_volume)
+        except:
+            print("Failed to set volume on output", output_id)
 
     def get_volume(self, output_id):
         result = self.send("VOL," + str(output_id).zfill(2) + "?")
         result = result.split(',')
         return int(result[2])
+
+    def set_volume(self, output_id, volume):
+        print("Setting", output_id, "to volume", volume)
+        result = self.send("VOL," + str(output_id).zfill(2) + ',' + str(volume))
+        print(result)
+        return result
 
     def is_connected(self):
         return "SYSOFF" in self.send("SYSOFF?")
