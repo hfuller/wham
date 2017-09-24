@@ -96,15 +96,21 @@ class S128P(object):
 
 
     def refresh_output_data(self):
-        for output in self.outputs:
-            output.input = self.get_selected_input(output.id)
-            output.volume = self.get_volume(output.id)
+        try:
+            for output in self.outputs:
+                output.input = self.get_selected_input(output.id)
+                output.volume = self.get_volume(output.id)
+        except IndexError:
+            print("Output refresh failed!")
     
     def refresh_input_data(self):
-        detect = list(self.get_input_detect())
-        if self.debug: print(detect)
-        for input in self.inputs:
-            input.active = bool(int(detect[input.id-1]))
+        try:
+            detect = list(self.get_input_detect())
+            if self.debug: print(detect)
+            for input in self.inputs:
+                input.active = bool(int(detect[input.id-1]))
+        except IndexError:
+            print("Output refresh failed!")
 
     # this fetches the input of a particular OUTPUT.
     # this does NOT get, e.g. input 3 -- it gets the
