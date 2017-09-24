@@ -10,6 +10,7 @@ from s128p import S128P
 
 app = Flask(__name__)
 controller = None
+last_active = {}
 
 
 @app.route('/')
@@ -57,8 +58,11 @@ def refresh_thread():
 			if input.active:
 				last_active[input.id] = now
 		
+		print "=== last_active:", last_active
+
 		for output in controller.outputs:
 			try:
+				print output.id, "input", output.input
 				if output.input == None or last_active[output.input] < now - timedelta(seconds=8):
 					controller.set_input(output.id, output.default_input)
 					print "reset " + str(output.id) + " to " + str(output.default_input)
@@ -105,7 +109,8 @@ if __name__ == '__main__':
 	print "INPUTS: " + jsonpickle.encode(controller.inputs, unpicklable=False)
 	print "OUTPUTS: " + jsonpickle.encode(controller.outputs, unpicklable=False)
 
-	last_active = [datetime.now() for input in controller.inputs]
+	for input in controller.inputs:
+		last_active[input.id] = datetime.now()
 	print(last_active)
 
 	print "Starting refresh thread"
