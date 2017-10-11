@@ -1,0 +1,2 @@
+SUBSYSTEM=="tty", ATTRS{idProduct}=="2303", SYMLINK+="ttyAudio"
+

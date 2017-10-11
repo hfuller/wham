@@ -31,7 +31,7 @@ class S128P(object):
         self.lock = Lock()
 
         print("init s128p")
-        self.port = Serial('/dev/ttyUSB0', 19200, timeout=1.0) #0.2s timeout from protocol doc
+        self.port = Serial('/dev/ttyAudio', 19200, timeout=1.0) #0.2s timeout from protocol doc
         if self.is_connected():
             print("connected ok!")
         else:
