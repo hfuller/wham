@@ -1,0 +1,15 @@
+[Unit]
+Description=WHAM
+After=network.target
+
+[Service]
+Type=simple
+User=wham
+ExecStart=/opt/wham/venv/bin/python -u /opt/wham/whamservice.py
+WorkingDirectory=/opt/wham
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+
