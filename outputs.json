@@ -10,10 +10,5 @@
         "name": "Office",
         "default_input": 2,
         "default_volume": 100
-    },
-    {
-        "id": 3,
-        "name": "Test",
-        "default_input": 2
     }
 ]
